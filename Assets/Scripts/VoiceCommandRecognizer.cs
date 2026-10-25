@@ -58,7 +58,11 @@ public sealed class VoiceCommandRecognizer : MonoBehaviour
     readonly Queue<RecognitionRecord> history = new Queue<RecognitionRecord>(32);
     public static readonly string[] CommandKeywords = { "select", "place", "release", "reset",
         "rotate left", "rotate right", "rotate 45 degrees", "rotate 90 degrees",
-        "move up", "move down", "move left", "move right" };
+        "move up", "move down", "move left", "move right",
+        "open handbook", "close handbook", "next page", "previous page",
+        "flip", "move forward", "move backward", "change color", "make bigger", "make smaller",
+        "duplicate", "delete", "undo", "activate", "turn lights on", "turn lights off",
+        "go home", "what am i looking at", "help" };
     readonly long[] lastPhraseTicks = new long[CommandKeywords.Length];
     readonly long[] lastDispatchTicks = new long[CommandKeywords.Length];
     int session, accepting, queued, dropped;

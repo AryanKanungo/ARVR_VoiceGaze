@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -7,6 +8,8 @@ public sealed class SpatialVoiceIntentController : MonoBehaviour
 {
     public enum InteractionState { Idle, Selected }
     public GazeTargetResolver resolver;
+    public CommandHandbook handbook;
+    public StudioInteractionCommands studio;
     public UnityEngine.UI.Text statusText;
     public InteractableObject[] targets;
     public InteractionState State { get; private set; }
@@ -21,6 +24,7 @@ public sealed class SpatialVoiceIntentController : MonoBehaviour
     int lastAcceptedFrame = -1;
     bool statusDirty = true;
     float nextStatusRefresh;
+    readonly List<InteractableObject> occupancyObjects = new List<InteractableObject>(24);
     string taskStatus = "Recognized: 0 | Command success: N/A\nCompleted tasks: 0 | Failed tasks: 0 | Task failure: N/A\nAvg completed task: N/A";
 
     public void SetTaskFeedback(string value) { taskStatus = value; RefreshStatus(); }
@@ -40,7 +44,10 @@ public sealed class SpatialVoiceIntentController : MonoBehaviour
         var keyboard = Keyboard.current;
         if (keyboard != null)
         {
-            if (keyboard.digit1Key.wasPressedThisFrame) ExecuteCommand(InteractionCommandContext.Capture(InteractionInputSource.Keyboard, "select"));
+            if (keyboard.hKey.wasPressedThisFrame) ExecuteCommand(InteractionCommandContext.Capture(InteractionInputSource.Keyboard, handbook && handbook.IsOpen ? "close handbook" : "open handbook"));
+            else if (handbook && handbook.IsOpen && keyboard.rightArrowKey.wasPressedThisFrame) ExecuteCommand(InteractionCommandContext.Capture(InteractionInputSource.Keyboard, "next page"));
+            else if (handbook && handbook.IsOpen && keyboard.leftArrowKey.wasPressedThisFrame) ExecuteCommand(InteractionCommandContext.Capture(InteractionInputSource.Keyboard, "previous page"));
+            else if (keyboard.digit1Key.wasPressedThisFrame) ExecuteCommand(InteractionCommandContext.Capture(InteractionInputSource.Keyboard, "select"));
             else if (keyboard.digit2Key.wasPressedThisFrame) ExecuteCommand(InteractionCommandContext.Capture(InteractionInputSource.Keyboard, "place"));
             else if (keyboard.digit3Key.wasPressedThisFrame) ExecuteCommand(InteractionCommandContext.Capture(InteractionInputSource.Keyboard, "release"));
             else if (keyboard.digit4Key.wasPressedThisFrame) ExecuteCommand(InteractionCommandContext.Capture(InteractionInputSource.Keyboard, "reset"));
@@ -60,22 +67,75 @@ public sealed class SpatialVoiceIntentController : MonoBehaviour
         long started = System.Diagnostics.Stopwatch.GetTimestamp();
         string selectedBefore = ObjectName(SelectedObject);
         var gaze = resolver ? resolver.CurrentStableTarget : null;
-        string target = context.Command == "select" ? ObjectName(gaze) : ObjectName(SelectedObject);
+        string target = context.Command == "select" || context.Command == "activate" || context.Command == "what am i looking at" ? ObjectName(gaze) : ObjectName(SelectedObject);
+        if (studio && context.Command == "undo") target = studio.UndoTargetName;
+        else if (studio && (context.Command == "turn lights on" || context.Command == "turn lights off")) target = ObjectName(studio.lightingControl);
+        else if (studio && context.Command == "go home") target = studio.studioCamera ? studio.studioCamera.name : "";
         string destination = gaze && gaze.kind == InteractableObject.TargetKind.Destination ? gaze.name : "";
         bool accepted = false;
         string reason = "", message;
         if (!isActiveAndEnabled) { reason = "controller_unavailable"; message = "Controller is disabled."; }
+        else if (handbook && handbook.IsOpen && context.Command != "help" && context.Command != "what am i looking at" && context.Command != "open handbook" && context.Command != "close handbook" && context.Command != "next page" && context.Command != "previous page")
+        { reason = "handbook_open"; message = "Close the handbook to manipulate objects."; }
         else if (lastAcceptedFrame == Time.frameCount && lastAcceptedCommand == context.Command)
         { reason = "duplicate_same_frame"; message = "Duplicate command ignored."; }
         else
         {
             switch (context.Command)
             {
+                case "open handbook":
+                case "help":
+                case "close handbook":
+                case "next page":
+                case "previous page":
+                    if (!handbook) { reason = "handbook_unconfigured"; message = "Handbook unavailable."; }
+                    else { accepted = handbook.Navigate(context.Command == "help" ? "open handbook" : context.Command, out message); if (!accepted) reason = "handbook_unavailable_or_closed"; }
+                    break;
+                case "what am i looking at":
+                    accepted = gaze != null;
+                    reason = accepted ? "" : "no_stable_target";
+                    message = accepted ? "You are looking at " + gaze.name + "." : "No stable gaze target.";
+                    break;
+                case "activate":
+                case "turn lights on":
+                case "turn lights off":
+                case "go home":
+                case "undo":
+                    if (!studio) { reason = "studio_unconfigured"; message = "Studio commands unavailable."; }
+                    else
+                    {
+                        if (context.Command == "activate") accepted = studio.Activate(gaze, SelectedObject, out reason, out message);
+                        else if (context.Command == "go home") accepted = studio.GoHome(out reason, out message);
+                        else if (context.Command == "undo")
+                        {
+                            accepted = studio.UndoEdit(out reason, out message);
+                            if (State == InteractionState.Selected && (!SelectedObject || !SelectedObject.gameObject.activeSelf)) ClearSelection();
+                        }
+                        else accepted = studio.SetLighting(context.Command == "turn lights on", out reason, out message);
+                        if (accepted) RebuildOccupancy();
+                    }
+                    break;
+                case "flip":
+                case "move forward":
+                case "move backward":
+                case "change color":
+                case "make bigger":
+                case "make smaller":
+                case "duplicate":
+                case "delete":
+                    if (!studio) { reason = "studio_unconfigured"; message = "Studio commands unavailable."; }
+                    else
+                    {
+                        accepted = studio.Edit(context.Command, SelectedObject, out reason, out message);
+                        if (accepted && context.Command == "delete") ClearSelection();
+                        if (accepted) RebuildOccupancy();
+                    }
+                    break;
                 case "select":
                     if (!gaze || gaze.kind != InteractableObject.TargetKind.Object)
-                    { reason = "no_stable_object"; message = "Select rejected: aim at a cube."; }
+                    { reason = "no_stable_object"; message = "Select rejected: aim at an object."; }
                     else if (State == InteractionState.Selected)
-                    { reason = "already_selected"; message = "Release your selection before selecting another cube."; }
+                    { reason = "already_selected"; message = "Release your selection before selecting another object."; }
                     else
                     {
                         SelectedObject = gaze; gaze.SetSelected(true); State = InteractionState.Selected;
@@ -84,14 +144,16 @@ public sealed class SpatialVoiceIntentController : MonoBehaviour
                     break;
                 case "place":
                     if (State != InteractionState.Selected || !SelectedObject)
-                    { reason = "no_selection"; message = "Place rejected: select a cube first."; }
+                    { reason = "no_selection"; message = "Place rejected: select an object first."; }
                     else if (!gaze || gaze.kind != InteractableObject.TargetKind.Destination || !gaze.placementAnchor)
                     { reason = "no_stable_destination"; message = "Place rejected: aim at a destination pad."; }
                     else if (gaze.IsOccupied)
                     { reason = "destination_occupied"; message = "Place rejected: pad is occupied."; }
                     else
                     {
-                        SelectedObject.transform.SetPositionAndRotation(gaze.placementAnchor.position, gaze.placementAnchor.rotation);
+                        if (studio) studio.CaptureEdit(SelectedObject);
+                        SelectedObject.transform.rotation = gaze.placementAnchor.rotation;
+                        SelectedObject.transform.position = PlacementPosition(gaze, SelectedObject);
                         RebuildOccupancy();
                         message = "Placed " + SelectedObject.name + " on " + gaze.name + ".";
                         ClearSelection(); accepted = true;
@@ -106,7 +168,8 @@ public sealed class SpatialVoiceIntentController : MonoBehaviour
                     {
                         ClearSelection();
                         foreach (var item in targets) if (item) item.RestoreTransform();
-                        accepted = true; message = "All cubes reset.";
+                        if (studio) studio.ResetStudio();
+                        accepted = true; message = "All objects reset.";
                     }
                     break;
                 case "rotate left":
@@ -118,9 +181,10 @@ public sealed class SpatialVoiceIntentController : MonoBehaviour
                 case "move left":
                 case "move right":
                     if (State != InteractionState.Selected || !SelectedObject)
-                    { reason = "no_selection"; message = context.Command + " rejected: select a cube first."; }
+                    { reason = "no_selection"; message = context.Command + " rejected: select an object first."; }
                     else
                     {
+                        if (studio) studio.CaptureEdit(SelectedObject);
                         var selected = SelectedObject.transform;
                         switch (context.Command)
                         {
@@ -168,16 +232,25 @@ public sealed class SpatialVoiceIntentController : MonoBehaviour
     void RebuildOccupancy()
     {
         if (targets == null) return;
+        occupancyObjects.Clear();
+        occupancyObjects.AddRange(targets);
+        if (studio) studio.AppendDuplicates(occupancyObjects);
         foreach (var pad in targets)
         {
             if (!pad || pad.kind != InteractableObject.TargetKind.Destination) continue;
             pad.SetOccupant(null);
             if (!pad.placementAnchor) continue;
-            foreach (var item in targets)
+            foreach (var item in occupancyObjects)
                 if (item && item.kind == InteractableObject.TargetKind.Object &&
-                    Vector3.SqrMagnitude(item.transform.position - pad.placementAnchor.position) < .001f)
+                    item.gameObject.activeSelf && Vector3.SqrMagnitude(item.transform.position - PlacementPosition(pad, item)) < .001f)
                     pad.SetOccupant(item);
         }
+    }
+    static Vector3 PlacementPosition(InteractableObject pad, InteractableObject item)
+    {
+        // Original 0.4 m objects keep their existing anchor pose; resized forms rest on the pad.
+        var bounds = item.SurfaceBounds;
+        return pad.placementAnchor.position + Vector3.up * (bounds.extents.y + item.transform.position.y - bounds.center.y - .2f);
     }
     static string ObjectName(InteractableObject item) { return item ? item.name : ""; }
     void ClearSelection()
@@ -194,11 +267,11 @@ public sealed class SpatialVoiceIntentController : MonoBehaviour
         string latency = !HasCommandResult ? "Processing: — | Voice event-to-action: —" :
             "Processing: " + LastResult.ProcessingMs.ToString("F3") + " ms | Voice event-to-action: " +
             (LastResult.RecognitionEventToActionMs.HasValue ? LastResult.RecognitionEventToActionMs.Value.ToString("F2") + " ms" : "n/a");
-        statusText.text = "VOICE + GAZE / GROUP 05\n" + (voiceStatus ?? "Voice: starting") +
+        statusText.text = "VOICEVERSE / STUDIO LIVE\n" + (voiceStatus ?? "Voice: starting") +
             "\n" + (lastHeard ?? "Heard: None") +
             "\nGaze: " + (lastGaze ? lastGaze.name : "—") + " | Selected: " + (SelectedObject ? SelectedObject.name : "—") +
             "\nResult: " + LastMessage + "\n" + latency + "\n" + taskStatus + "\n" + performanceStatus + "\n" + loggingStatus +
-            "\n1 Select  2 Place  3 Release  4 Reset\nRMB + mouse: look | WASD: move | Q/E: down/up";
+            "\n1 Select  2 Place  3 Release  4 Reset  |  H Handbook\nRMB + mouse: look | WASD: move | Q/E: down/up";
     }
     void OnDisable() { ClearSelection(); }
 }

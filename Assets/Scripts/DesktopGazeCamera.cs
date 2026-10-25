@@ -8,7 +8,8 @@ public sealed class DesktopGazeCamera : MonoBehaviour
     public float moveSpeed = 1.5f;
     public float lookSensitivity = .12f;
     float yaw, pitch;
-    void OnEnable() { yaw = transform.eulerAngles.y; pitch = transform.eulerAngles.x; }
+    void OnEnable() { SynchronizeLook(); }
+    public void SynchronizeLook() { yaw = transform.eulerAngles.y; pitch = Mathf.DeltaAngle(0f, transform.eulerAngles.x); }
     void Update()
     {
         var mouse = Mouse.current;
