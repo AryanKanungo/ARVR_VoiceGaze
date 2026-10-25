@@ -19,6 +19,11 @@ public sealed class SpatialVoiceIntentController : MonoBehaviour
     string voiceStatus, lastHeard, performanceStatus = "Performance: warming up", loggingStatus = "CSV: starting";
     string lastAcceptedCommand;
     int lastAcceptedFrame = -1;
+    bool statusDirty = true;
+    float nextStatusRefresh;
+    string taskStatus = "Recognized: 0 | Command success: N/A\nCompleted tasks: 0 | Failed tasks: 0 | Task failure: N/A\nAvg completed task: N/A";
+
+    public void SetTaskFeedback(string value) { taskStatus = value; RefreshStatus(); }
 
     public void SetVoiceFeedback(string status, string heard)
     {
@@ -41,6 +46,8 @@ public sealed class SpatialVoiceIntentController : MonoBehaviour
             else if (keyboard.digit4Key.wasPressedThisFrame) ExecuteCommand(InteractionCommandContext.Capture(InteractionInputSource.Keyboard, "reset"));
         }
         if (lastGaze != (resolver ? resolver.CurrentStableTarget : null)) RefreshStatus();
+        if (statusDirty && Time.unscaledTime >= nextStatusRefresh)
+        { nextStatusRefresh = Time.unscaledTime + .2f; statusDirty = false; RenderStatus(); }
     }
     // Existing API remains available. Direct API calls are honestly labeled system, not keyboard.
     public void Select() { ExecuteCommand(InteractionCommandContext.Capture(InteractionInputSource.System, "select")); }
@@ -51,6 +58,7 @@ public sealed class SpatialVoiceIntentController : MonoBehaviour
     public InteractionCommandResult ExecuteCommand(InteractionCommandContext context)
     {
         long started = System.Diagnostics.Stopwatch.GetTimestamp();
+        string selectedBefore = ObjectName(SelectedObject);
         var gaze = resolver ? resolver.CurrentStableTarget : null;
         string target = context.Command == "select" ? ObjectName(gaze) : ObjectName(SelectedObject);
         string destination = gaze && gaze.kind == InteractableObject.TargetKind.Destination ? gaze.name : "";
@@ -101,11 +109,40 @@ public sealed class SpatialVoiceIntentController : MonoBehaviour
                         accepted = true; message = "All cubes reset.";
                     }
                     break;
+                case "rotate left":
+                case "rotate right":
+                case "rotate 45 degrees":
+                case "rotate 90 degrees":
+                case "move up":
+                case "move down":
+                case "move left":
+                case "move right":
+                    if (State != InteractionState.Selected || !SelectedObject)
+                    { reason = "no_selection"; message = context.Command + " rejected: select a cube first."; }
+                    else
+                    {
+                        var selected = SelectedObject.transform;
+                        switch (context.Command)
+                        {
+                            case "rotate left": selected.Rotate(0f, -45f, 0f, Space.Self); break;
+                            case "rotate right":
+                            case "rotate 45 degrees": selected.Rotate(0f, 45f, 0f, Space.Self); break;
+                            case "rotate 90 degrees": selected.Rotate(0f, 90f, 0f, Space.Self); break;
+                            case "move up": selected.position += Vector3.up * .25f; break;
+                            case "move down": selected.position += Vector3.down * .25f; break;
+                            case "move left": selected.position += Vector3.left * .25f; break;
+                            case "move right": selected.position += Vector3.right * .25f; break;
+                        }
+                        RebuildOccupancy(); accepted = true;
+                        message = context.Command + ": " + SelectedObject.name + ".";
+                    }
+                    break;
                 default: reason = "unknown_command"; message = "Unknown command rejected."; break;
             }
         }
         if (accepted) { lastAcceptedCommand = context.Command; lastAcceptedFrame = Time.frameCount; }
-        return Complete(context, started, accepted, reason, target, destination, message);
+        return Complete(context, started, accepted, reason, target, destination, message,
+            accepted && context.Command == "select" ? target : selectedBefore);
     }
     public InteractionCommandResult RecordRejectedCommand(InteractionCommandContext context, string reason)
     {
@@ -114,15 +151,15 @@ public sealed class SpatialVoiceIntentController : MonoBehaviour
         return Complete(context, started, false, reason,
             context.Command == "select" ? ObjectName(gaze) : ObjectName(SelectedObject),
             gaze && gaze.kind == InteractableObject.TargetKind.Destination ? gaze.name : "",
-            context.Command + " rejected: " + reason + ".");
+            context.Command + " rejected: " + reason + ".", ObjectName(SelectedObject));
     }
     InteractionCommandResult Complete(InteractionCommandContext context, long started, bool accepted,
-        string reason, string target, string destination, string message)
+        string reason, string target, string destination, string message, string selectedObject)
     {
         // End the timing boundary before UI formatting, event logging, or disk work.
         long completed = System.Diagnostics.Stopwatch.GetTimestamp();
         var result = new InteractionCommandResult(context, accepted, reason, target, destination,
-            DateTime.UtcNow, completed, started, Time.unscaledDeltaTime * 1000f);
+            DateTime.UtcNow, completed, started, Time.unscaledDeltaTime * 1000f, selectedObject);
         LastResult = result; HasCommandResult = true; LastMessage = message;
         CommandCompleted?.Invoke(result);
         RefreshStatus();
@@ -149,6 +186,8 @@ public sealed class SpatialVoiceIntentController : MonoBehaviour
         SelectedObject = null; State = InteractionState.Idle;
     }
     void RefreshStatus()
+    { statusDirty = true; }
+    void RenderStatus()
     {
         lastGaze = resolver ? resolver.CurrentStableTarget : null;
         if (!statusText) return;
@@ -158,7 +197,7 @@ public sealed class SpatialVoiceIntentController : MonoBehaviour
         statusText.text = "VOICE + GAZE / GROUP 05\n" + (voiceStatus ?? "Voice: starting") +
             "\n" + (lastHeard ?? "Heard: None") +
             "\nGaze: " + (lastGaze ? lastGaze.name : "—") + " | Selected: " + (SelectedObject ? SelectedObject.name : "—") +
-            "\nResult: " + LastMessage + "\n" + latency + "\n" + performanceStatus + "\n" + loggingStatus +
+            "\nResult: " + LastMessage + "\n" + latency + "\n" + taskStatus + "\n" + performanceStatus + "\n" + loggingStatus +
             "\n1 Select  2 Place  3 Release  4 Reset\nRMB + mouse: look | WASD: move | Q/E: down/up";
     }
     void OnDisable() { ClearSelection(); }

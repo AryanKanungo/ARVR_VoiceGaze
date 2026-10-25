@@ -1,0 +1,6 @@
+Result=Cancelled
+Errors=1
+Warnings=543
+Bytes=71397805
+Duration=00:18:41.2707542
+Path=E:/Unity/IVRAR_VoiceGaze/Builds/Windows/IVRAR_VoiceGaze.exe

@@ -56,8 +56,11 @@ public sealed class VoiceCommandRecognizer : MonoBehaviour
     }
     readonly ConcurrentQueue<PendingEvent> pending = new ConcurrentQueue<PendingEvent>();
     readonly Queue<RecognitionRecord> history = new Queue<RecognitionRecord>(32);
-    readonly long[] lastPhraseTicks = new long[4];
-    readonly long[] lastDispatchTicks = new long[4];
+    public static readonly string[] CommandKeywords = { "select", "place", "release", "reset",
+        "rotate left", "rotate right", "rotate 45 degrees", "rotate 90 degrees",
+        "move up", "move down", "move left", "move right" };
+    readonly long[] lastPhraseTicks = new long[CommandKeywords.Length];
+    readonly long[] lastDispatchTicks = new long[CommandKeywords.Length];
     int session, accepting, queued, dropped;
     bool initialized, faulted;
     float nextHealthCheck;
@@ -96,7 +99,7 @@ public sealed class VoiceCommandRecognizer : MonoBehaviour
             MicrophoneStatus = Microphone.devices.Length > 0 ? "Default input detected" : "No input detected";
             if (Microphone.devices.Length == 0) { SetStatus("Connect microphone, then retry"); return; }
             int thisSession = Volatile.Read(ref session);
-            recognizer = new KeywordRecognizer(new[] { "select", "place", "release", "reset" },
+            recognizer = new KeywordRecognizer(CommandKeywords,
                 NativeConfidence(minimumConfidence));
             phraseHandler = args => {
                 long receivedTicks = System.Diagnostics.Stopwatch.GetTimestamp();
@@ -241,10 +244,8 @@ public sealed class VoiceCommandRecognizer : MonoBehaviour
 
     static int CommandIndex(string command)
     {
-        if (string.Equals(command, "select", StringComparison.OrdinalIgnoreCase)) return 0;
-        if (string.Equals(command, "place", StringComparison.OrdinalIgnoreCase)) return 1;
-        if (string.Equals(command, "release", StringComparison.OrdinalIgnoreCase)) return 2;
-        if (string.Equals(command, "reset", StringComparison.OrdinalIgnoreCase)) return 3;
+        for (int i = 0; i < CommandKeywords.Length; i++)
+            if (string.Equals(command, CommandKeywords[i], StringComparison.OrdinalIgnoreCase)) return i;
         return -1;
     }
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
