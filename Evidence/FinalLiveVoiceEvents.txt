@@ -1,0 +1,25 @@
+Confidence=Low status=Listening dispatches=2 suppressed=0
+2026-10-25T08:35:34.2836613Z command=select confidence=High disposition=sent phraseStart=2026-10-25T08:35:31.4372375Z duration=0.86
+2026-10-25T08:35:41.1799957Z command=place confidence=High disposition=sent phraseStart=2026-10-25T08:35:38.4272375Z duration=0.64
+State=Idle feedback=Placed Blue Cube on Left Pad.
+Red Cube position=(-1.20, 1.06, 2.80) selected=False occupied=False
+Blue Cube position=(-1.05, 0.35, 1.35) selected=False occupied=False
+Green Cube position=(0.40, 1.06, 2.80) selected=False occupied=False
+Yellow Cube position=(1.20, 1.06, 2.80) selected=False occupied=False
+Left Pad position=(-1.05, 0.08, 1.35) selected=False occupied=True
+Right Pad position=(1.05, 0.08, 1.35) selected=False occupied=False
+
+FINAL LIVE CHECK
+Status=Listening confidence=Low count=5 suppressed=0
+2026-10-25T08:41:56.9142106Z command=select confidence=Medium disposition=sent phraseStart=2026-10-25T08:41:55.7095744Z duration=0.87
+2026-10-25T08:42:01.6737288Z command=place confidence=Medium disposition=sent phraseStart=2026-10-25T08:42:00.7295744Z duration=0.52
+2026-10-25T08:42:04.7531511Z command=reset confidence=Medium disposition=sent phraseStart=2026-10-25T08:42:03.5995744Z duration=0.76
+2026-10-25T08:42:11.1037777Z command=select confidence=High disposition=sent phraseStart=2026-10-25T08:42:10.0595744Z duration=0.5699999
+2026-10-25T08:42:13.4775051Z command=release confidence=Medium disposition=sent phraseStart=2026-10-25T08:42:12.3895744Z duration=0.61
+State=Idle feedback=Selection released.
+Red Cube position=(-1.20, 1.06, 2.80) selected=False occupied=False
+Blue Cube position=(-0.40, 1.06, 2.80) selected=False occupied=False
+Green Cube position=(0.40, 1.06, 2.80) selected=False occupied=False
+Yellow Cube position=(1.20, 1.06, 2.80) selected=False occupied=False
+Left Pad position=(-1.05, 0.08, 1.35) selected=False occupied=False
+Right Pad position=(1.05, 0.08, 1.35) selected=False occupied=False

@@ -1,0 +1,33 @@
+IVRAR RUNTIME FAIL: invalid Place
+IVRAR RUNTIME PASS: gaze stabilization
+IVRAR RUNTIME FAIL: keyboard 1 Select
+IVRAR RUNTIME FAIL: pad gaze with persistent selection
+IVRAR RUNTIME FAIL: keyboard 2 Place
+IVRAR RUNTIME PASS: keyboard 4 Reset
+IVRAR RUNTIME FAIL: reselect
+IVRAR RUNTIME PASS: keyboard 3 Release
+IVRAR RUNTIME FAIL: invalid Select
+IVRAR RUNTIME FAIL: W movement
+IVRAR RUNTIME TEST COMPLETE
+IVRAR RUNTIME FAIL: invalid Place
+IVRAR RUNTIME PASS: gaze stabilization
+IVRAR RUNTIME FAIL: keyboard 1 Select
+IVRAR RUNTIME FAIL: pad gaze with persistent selection
+IVRAR RUNTIME FAIL: keyboard 2 Place
+IVRAR RUNTIME PASS: keyboard 4 Reset
+IVRAR RUNTIME FAIL: reselect
+IVRAR RUNTIME PASS: keyboard 3 Release
+IVRAR RUNTIME FAIL: invalid Select
+IVRAR RUNTIME FAIL: W movement
+IVRAR RUNTIME TEST COMPLETE
+IVRAR RUNTIME PASS: invalid Place
+IVRAR RUNTIME PASS: gaze stabilization
+IVRAR RUNTIME PASS: keyboard 1 Select
+IVRAR RUNTIME PASS: pad gaze with persistent selection
+IVRAR RUNTIME PASS: keyboard 2 Place
+IVRAR RUNTIME PASS: keyboard 4 Reset
+IVRAR RUNTIME PASS: reselect
+IVRAR RUNTIME PASS: keyboard 3 Release
+IVRAR RUNTIME PASS: invalid Select
+IVRAR RUNTIME PASS: W movement
+IVRAR RUNTIME TEST COMPLETE

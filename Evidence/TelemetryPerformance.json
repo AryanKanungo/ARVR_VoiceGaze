@@ -1,0 +1,22 @@
+{
+    "session_id": "9021819b1c0748d8ba23b2bdc13b5ef1",
+    "csv_path": "C:/Users/aryan/AppData/LocalLow/DefaultCompany/IVRAR_VoiceGaze\\Telemetry\\interaction_20261025_091450_9021819b1c0748d8ba23b2bdc13b5ef1.csv",
+    "measurement_started_utc": "2026-10-25T09:14:54.4621009Z",
+    "measurement_ended_utc": "2026-10-25T09:15:06.4880203Z",
+    "unity_version": "6000.5.7f1",
+    "platform": "WindowsEditor",
+    "graphics_api": "Vulkan",
+    "context": "Automated development Editor scene; not human trial results or headset performance.",
+    "measurement_id": 2,
+    "target_frame_rate": -1,
+    "v_sync_count": 0,
+    "passed_checks": 18,
+    "failed_checks": 0,
+    "sampled_frames": 232,
+    "sampled_duration_s": 9.985183212906123,
+    "average_frame_ms": 43.03958281425053,
+    "average_fps": 23.234425954261277,
+    "max_frame_ms": 60.279399156570438,
+    "warmup_s": 2.0,
+    "application_focused_at_snapshot": true
+}

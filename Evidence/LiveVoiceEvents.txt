@@ -1,0 +1,14 @@
+2026-10-25T08:31:38.7093243Z phraseStart=2026-10-25T08:31:37.2531183Z duration=0.72 command=select confidence=High disposition=sent
+State=Selected feedback=Selected Blue Cube. Aim at a pad, then press 2.
+
+LOW CONFIDENCE LIVE TEST
+Confidence=Low status=Listening dispatches=2 suppressed=0
+2026-10-25T08:35:34.2836613Z phraseStart=2026-10-25T08:35:31.4372375Z duration=0.86 command=select confidence=High disposition=sent
+2026-10-25T08:35:41.1799957Z phraseStart=2026-10-25T08:35:38.4272375Z duration=0.64 command=place confidence=High disposition=sent
+State=Idle feedback=Placed Blue Cube on Left Pad.
+Red Cube position=(-1.20, 1.06, 2.80) occupied=False
+Blue Cube position=(-1.05, 0.35, 1.35) occupied=False
+Green Cube position=(0.40, 1.06, 2.80) occupied=False
+Yellow Cube position=(1.20, 1.06, 2.80) occupied=False
+Left Pad position=(-1.05, 0.08, 1.35) occupied=True
+Right Pad position=(1.05, 0.08, 1.35) occupied=False

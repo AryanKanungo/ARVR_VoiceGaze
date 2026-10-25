@@ -1,0 +1,37 @@
+{
+  "csv_path": "C:\\Users\\aryan\\AppData\\LocalLow\\DefaultCompany\\IVRAR_VoiceGaze\\Telemetry\\interaction_20261025_091507_0e6375257fc8446a8d7f3f026eb7402e.csv",
+  "schema_columns": 35,
+  "rows": 152,
+  "session_ids": [
+    "0e6375257fc8446a8d7f3f026eb7402e"
+  ],
+  "command_rows": 3,
+  "record_types": {
+    "session_start": 1,
+    "performance": 148,
+    "command": 3
+  },
+  "input_sources": {
+    "voice": 3
+  },
+  "accepted_commands": 3,
+  "rejection_reasons": {},
+  "synthetic_voice_rows": 0,
+  "real_voice_rows": 3,
+  "real_voice_accepted_commands": {
+    "select": 1,
+    "place": 1,
+    "reset": 1
+  },
+  "real_voice_event_to_action_ms": {
+    "n": 3,
+    "min": 1.0479,
+    "mean": 3.043066666666667,
+    "median": 1.6314,
+    "max": 6.4499
+  },
+  "keyboard_processing_ms": null,
+  "performance_rows": 148,
+  "validation": "PASS",
+  "interpretation": "Development/automation verification only; not human-study or acoustic speech-latency results."
+}

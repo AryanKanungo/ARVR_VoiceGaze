@@ -1,0 +1,20 @@
+TELEMETRY TEST PASS: 120 ms gaze configuration preserved
+TELEMETRY TEST PASS: invalid keyboard Place rejected with source and reason
+TELEMETRY TEST PASS: keyboard Select accepted and target captured
+TELEMETRY TEST PASS: selection persists while gaze moves
+TELEMETRY TEST PASS: keyboard Place moves cube and records target/destination before clearing
+TELEMETRY TEST PASS: occupied pad rejected without losing selection
+TELEMETRY TEST PASS: invalid destination rejected safely
+TELEMETRY TEST PASS: keyboard Release
+TELEMETRY TEST PASS: keyboard Reset restores transforms and occupancy
+TELEMETRY TEST PASS: invalid keyboard Select rejected
+TELEMETRY TEST PASS: same-frame duplicate prevented (explicitly synthetic voice rows)
+TELEMETRY TEST PASS: Reset works without gaze resolver
+TELEMETRY TEST PASS: filtered voice result can be logged without manipulation (synthetic)
+TELEMETRY TEST PASS: rejected result has no action latency
+TELEMETRY TEST PASS: keyboard camera movement unchanged
+TELEMETRY TEST PASS: frame-time/FPS sample collected
+TELEMETRY TEST PASS: FPS calculated from total sampled duration
+TELEMETRY TEST PASS: background CSV writer flushed rows without drops/errors
+TELEMETRY MEASURED: N=232 mean_ms=43.0395828142505 FPS=23.2344259542613 max_ms=60.2793991565704 csv=C:/Users/aryan/AppData/LocalLow/DefaultCompany/IVRAR_VoiceGaze\Telemetry\interaction_20261025_091450_9021819b1c0748d8ba23b2bdc13b5ef1.csv
+TELEMETRY TEST COMPLETE: passed=18 failed=0
