@@ -59,6 +59,8 @@ public sealed class InteractionTelemetry : MonoBehaviour
 {
     public SpatialVoiceIntentController controller;
     public VoiceCommandRecognizer voiceRecognizer;
+    [Tooltip("Optional platform speech provider; empty retains the Windows backend.")]
+    public MonoBehaviour speechProvider;
     [Tooltip("Development data by default. Set explicitly for an approved study protocol.")]
     public string sessionLabel = "development";
     [Tooltip("No implicit human trials are generated. Set with BeginTrial for each planned trial.")]
@@ -267,7 +269,8 @@ public sealed class InteractionTelemetry : MonoBehaviour
         Cell(b, Application.isFocused ? "true" : "false"); Cell(b, Application.unityVersion);
         Cell(b, Application.platform.ToString()); Cell(b, phraseStart); Cell(b, Number(phraseMs));
         Cell(b, DroppedRows.ToString(culture));
-        Cell(b, voiceRecognizer ? voiceRecognizer.DroppedCallbackEvents.ToString(culture) : "");
+        var provider = speechProvider as IInteractionSpeechProvider ?? voiceRecognizer;
+        Cell(b, provider != null ? provider.DroppedCallbackEvents.ToString(culture) : "");
         Cell(b, MeasurementId.ToString(culture)); Cell(b, Number(warmupSeconds));
         Cell(b, selected); Cell(b, voiceLatency.HasValue ? Number(voiceLatency) : "N/A");
         var task = taskRecord ?? activeTask;

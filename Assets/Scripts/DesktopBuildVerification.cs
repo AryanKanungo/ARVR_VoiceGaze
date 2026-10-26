@@ -41,7 +41,7 @@ public sealed class DesktopBuildVerification : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void Bootstrap()
     {
-#if !UNITY_EDITOR
+#if UNITY_STANDALONE_WIN && !UNITY_EDITOR
         Application.targetFrameRate=60;
         if(Flag("-ivrar-benchmark") || Flag("-ivrar-self-test"))
         {

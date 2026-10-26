@@ -9,7 +9,7 @@ using UnityEngine.Windows.Speech;
 
 // Native callbacks only enqueue data. LateUpdate runs after gaze (10) and keyboard (20).
 [DefaultExecutionOrder(30), DisallowMultipleComponent]
-public sealed class VoiceCommandRecognizer : MonoBehaviour
+public sealed class VoiceCommandRecognizer : MonoBehaviour, IInteractionSpeechProvider
 {
     public enum RecognitionConfidence { High, Medium, Low }
     public SpatialVoiceIntentController controller;

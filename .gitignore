@@ -25,3 +25,7 @@
 *.VC.db
 .DS_Store
 sysinfo.txt
+
+# Local Wit.ai configuration: never commit access tokens.
+/Assets/Resources/QuestVoiceLocal/
+/Assets/Resources/QuestVoiceLocal.meta

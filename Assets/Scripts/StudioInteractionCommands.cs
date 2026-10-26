@@ -6,6 +6,7 @@ using UnityEngine;
 public sealed class StudioInteractionCommands : MonoBehaviour
 {
     public Camera studioCamera;
+    public QuestRigSupport questRig;
     public Light studioLight;
     public InteractableObject lightingControl;
     public InteractableObject materialControl;
@@ -150,6 +151,7 @@ public sealed class StudioInteractionCommands : MonoBehaviour
     public bool GoHome(out string reason, out string message)
     {
         reason = "";
+        if (questRig) { questRig.GoHome(); message = "Returned XR origin home."; return true; }
         if (!studioCamera) { reason = "camera_unconfigured"; message = "Camera unavailable."; return false; }
         studioCamera.transform.SetPositionAndRotation(homePosition, homeRotation);
         var movement = studioCamera.GetComponent<DesktopGazeCamera>();
