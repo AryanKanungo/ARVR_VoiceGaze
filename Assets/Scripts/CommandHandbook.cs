@@ -7,6 +7,7 @@ public sealed class CommandHandbook : MonoBehaviour
 {
     public GameObject panel;
     public Text body;
+    [TextArea] public string platformFooter;
     public bool IsOpen { get; private set; }
     public int Page { get; private set; }
     public int PageCount => Pages.Length;
@@ -36,7 +37,7 @@ public sealed class CommandHandbook : MonoBehaviour
             default: message = "Unknown handbook command."; return false;
         }
         panel.SetActive(IsOpen);
-        if (IsOpen) body.text = "VOICEVERSE / THE DESIGN ATELIER\nCOMMAND HANDBOOK                                       " + (Page + 1) + " / " + Pages.Length + "\n________________________________________________\n\n" + Pages[Page] + "\n\nH Close   |   Next page / Previous page";
+        if (IsOpen) body.text = "VOICEVERSE / THE DESIGN ATELIER\nCOMMAND HANDBOOK                                       " + (Page + 1) + " / " + Pages.Length + "\n________________________________________________\n\n" + Pages[Page] + "\n\n" + (string.IsNullOrEmpty(platformFooter) ? "H Close   |   Next page / Previous page" : platformFooter);
         message = IsOpen ? "Handbook: page " + (Page + 1) + " / " + Pages.Length + ". Object commands paused." : "Handbook closed. Object commands ready.";
         return true;
     }

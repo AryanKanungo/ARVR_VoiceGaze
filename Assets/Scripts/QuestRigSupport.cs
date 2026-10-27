@@ -11,7 +11,7 @@ public sealed class QuestRigSupport : MonoBehaviour
     public SpatialVoiceIntentController controller;
     Vector3 homePosition;
     Quaternion homeRotation;
-    bool menuHeld, primaryHeld;
+    bool menuHeld, primaryHeld, secondaryHeld, aHeld, bHeld;
     void Awake() { homePosition = rigOrigin.position; homeRotation = rigOrigin.rotation; }
     void Update() { ApplyPose(); }
     void OnEnable() { Application.onBeforeRender += ApplyPose; }
@@ -27,12 +27,25 @@ public sealed class QuestRigSupport : MonoBehaviour
         var device = InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
         bool menu = device.TryGetFeatureValue(CommonUsages.menuButton, out bool v) && v;
         bool primary = device.TryGetFeatureValue(CommonUsages.primaryButton, out v) && v;
+        bool secondary = device.TryGetFeatureValue(CommonUsages.secondaryButton, out v) && v;
+        var right = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
+        bool a = right.TryGetFeatureValue(CommonUsages.primaryButton, out v) && v;
+        bool b = right.TryGetFeatureValue(CommonUsages.secondaryButton, out v) && v;
         if (controller && menu && !menuHeld) controller.ExecuteCommand(InteractionCommandContext.Capture(InteractionInputSource.System,
             handbook.IsOpen ? "close handbook" : "open handbook"));
         if (controller && handbook.IsOpen && primary && !primaryHeld)
             controller.ExecuteCommand(InteractionCommandContext.Capture(InteractionInputSource.System, "next page"));
-        menuHeld = menu; primaryHeld = primary;
+        if (controller && handbook.IsOpen && secondary && !secondaryHeld) Command("previous page");
+        if (controller && !handbook.IsOpen)
+        {
+            if (a && !aHeld) Command("select");
+            else if (b && !bHeld) Command("place");
+            else if (primary && !primaryHeld) Command("release");
+            else if (secondary && !secondaryHeld) Command("reset");
+        }
+        menuHeld = menu; primaryHeld = primary; secondaryHeld = secondary; aHeld = a; bHeld = b;
     }
+    void Command(string value) { controller.ExecuteCommand(InteractionCommandContext.Capture(InteractionInputSource.System, value)); }
     public void GoHome()
     {
         // Preserve current tracked head height, pitch and roll; recenter horizontal pose only.

@@ -128,3 +128,38 @@ The Console prints the actual session path at startup. This folder is outside th
 The latest implementation passed compilation, **123 new-command checks**, **10 existing keyboard/gaze regressions**, and **28 focused input/telemetry checks**. These covered protected originals, copy limits, Undo, Reset, resized placement, both controls, handbook navigation, camera look synchronization, recognizer restart and CSV validity. The final Console check reported zero errors.
 
 Select/Place/Release/Reset were previously tested with real speech. The latest added phrases were checked through automated routing and recognizer initialization, **not physical microphone tests**. Repeat spoken checks on each collaborator's PC. Stable 60 FPS, standalone build readiness, cross-platform voice support and a validated human experiment are not claimed.
+
+## Quest 3 scene and development profile
+
+The Windows scene remains `Assets/Scenes/MainVRScene.unity`. The separate Quest scene is `Assets/Scenes/MainQuestScene.unity`; its Android profile is `Assets/Settings/Build Profiles/VOICEVERSE Quest 3.asset`. Windows automatic XR startup is disabled. Android uses OpenXR, IL2CPP and ARM64. No additional XR or Voice packages were installed for this setup.
+
+Quest uses head-gaze, not eye tracking. The existing 120 ms gaze stabilization, interaction controller and CSV logger are shared. The scene contains one active tracked camera/audio listener. Headset comfort, tracking and microphone operation still require physical Quest 3 testing.
+
+### Existing Wit.ai configuration
+
+Use the existing `voice_verse` app and `Assets/wit_voice_verse.asset`; do not create another app or duplicate configuration. The configuration and local Wit settings are excluded from Git because they may contain access tokens. Never paste tokens into scripts, commit them, or send them in chat. On another PC, link the same app locally and run **VOICEVERSE > Quest > Create or Validate Quest Scene** to assign that local configuration.
+
+Quest voice uses final Meta Voice SDK/Wit.ai transcription and maps the same 31 command phrases listed above, without requiring trained Wit.ai intents. Case, surrounding punctuation and repeated whitespace are normalized; spoken forty-five/ninety-degree forms map to the existing numeric command strings. Unknown phrases are rejected through the existing telemetry. Partial transcripts never execute commands, and duplicate SDK notifications produce only one outcome per request. Transcription confidence is left unavailable rather than substituting an intent score. Optional `select_object` intent fallback remains available but is disabled by default; its separate confidence threshold applies only to that fallback. Conduit/attribute dispatch stays disabled because the bridge handles final transcription directly. These routes are implemented, not physically verified on Quest.
+
+### Quest activation and fallback controls
+
+- **Right trigger:** start one voice request. Allow microphone permission when prompted; speech processing requires Wi-Fi/internet. This is controller-triggered activation, not continuous hands-free listening.
+- **A / B:** Select / Place.
+- **X / Y:** Release / Reset while the handbook is closed.
+- **Left menu button:** open/close the handbook.
+- **X / Y with handbook open:** next/previous page. Object manipulation remains blocked while open.
+
+Controller fallback actions currently use the existing `system` input-source label in CSV; recognized speech uses `voice`. Microphone denial, missing configuration, unsupported/low-confidence intents, request timeout and network failure have visible status messages. No headset recognition success is claimed until spoken commands are tested on a physical device. Only physical-room movement is configured; artificial locomotion has not been added.
+
+### Building and testing later
+
+1. Save your work and select the **VOICEVERSE Quest 3** profile in Unity Build Profiles. It includes only `MainQuestScene` and preserves the global Windows scene list.
+2. Build a development APK. This project's first Android build can spend substantial time compiling the preinstalled SDKs' shaders; a progress window alone does not establish a failure.
+3. When the headset is available, enable Developer Mode, connect a USB data cable, approve USB debugging, and install the built APK using Meta Quest Developer Hub or Unity's Build And Run.
+4. In the app, aim at an object, press the right trigger, grant microphone access and say an existing exact command such as **Select**, **Place** or **Help**. Verify the actual action and voice CSV record. Test permission denial/retry, network loss and pause/resume as well.
+5. Use the controller fallback to check Place, Release, Reset and handbook navigation. CSV remains under the device's `Application.persistentDataPath/Telemetry`; its actual path is logged at runtime.
+6. Select the Windows platform/profile again to return to normal desktop development. Use `MainVRScene` for Windows and the Quest profile for headset builds.
+
+### Understanding Viewer diagnostics
+
+Use **VOICEVERSE > Quest > Diagnose Wit Text Request (No Microphone)** for a bounded text-only request through the same SDK factory as the Edit-mode Understanding Viewer. It reuses the existing configuration and its timeout. The Console and `Builds/QuestVerification/wit-text-diagnostic.json` record only HTTP status, a whitelisted error category and timing—never tokens, request headers/URLs or response bodies. This tests the Viewer text/network path separately from headset audio capture. A successful text request does not prove microphone recognition. Runtime Quest errors expose the same safe status/category diagnostics, and timeout, microphone denial, missing configuration and network loss remain visible in the status panel.

@@ -29,3 +29,7 @@ sysinfo.txt
 # Local Wit.ai configuration: never commit access tokens.
 /Assets/Resources/QuestVoiceLocal/
 /Assets/Resources/QuestVoiceLocal.meta
+/Assets/wit_voice_verse.asset
+/Assets/wit_voice_verse.asset.meta
+/ProjectSettings/wit.config
+/ProjectSettings/WitConfigExports/
